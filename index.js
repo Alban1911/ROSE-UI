@@ -11,6 +11,16 @@
   const BADGE_FLAG = 'data-skin-reward-badge';
 
   const INLINE_RULES = `
+    .skin-selection-carousel .skin-selection-item {
+      position: relative;
+      z-index: 1;
+    }
+
+    .skin-selection-carousel .skin-selection-item .skin-selection-item-information {
+      position: relative;
+      z-index: 2;
+    }
+
     .skin-selection-carousel .skin-selection-item.disabled,
     .skin-selection-carousel .skin-selection-item[aria-disabled="true"] {
       filter: grayscale(0) saturate(1.1) contrast(1.05) !important;
@@ -50,6 +60,7 @@
     .unlock-skin-hit-area .locked-state {
       display: none !important;
     }
+
   `;
 
   const log = {
@@ -117,7 +128,11 @@
   }
 
   function addBadgeToSkin(skinItem) {
-    if (!skinItem || skinItem.hasAttribute(BADGE_FLAG)) {
+    if (!skinItem) {
+      return;
+    }
+
+    if (skinItem.hasAttribute(BADGE_FLAG)) {
       return;
     }
 
@@ -126,17 +141,23 @@
       return;
     }
 
-    if (infoDiv.querySelector('.reward-badge')) {
-      skinItem.setAttribute(BADGE_FLAG, 'riot');
+    const existingBadge = skinItem.querySelector('.lpp-reward-badge');
+    if (existingBadge) {
+      skinItem.setAttribute(BADGE_FLAG, 'true');
       return;
     }
 
+    const legacyBadge = infoDiv.querySelector('.reward-badge');
+    if (legacyBadge) {
+      legacyBadge.closest('.info-badge-wrapper')?.remove();
+    }
+
     const wrapper = document.createElement('div');
-    wrapper.className = 'info-badge-wrapper badge-0';
+    wrapper.className = 'info-badge-wrapper badge-0 lpp-reward-badge';
     wrapper.style.position = 'absolute';
     wrapper.style.top = '-5px';
     wrapper.style.right = '-6px';
-    wrapper.style.zIndex = '3';
+    wrapper.style.zIndex = '5';
     wrapper.style.pointerEvents = 'none';
     wrapper.style.transform = 'scale(1.75)';
     wrapper.style.transformOrigin = 'top right';
@@ -146,6 +167,9 @@
     img.className = 'reward-badge';
 
     wrapper.appendChild(img);
+    if (getComputedStyle(infoDiv).position === 'static') {
+      infoDiv.style.position = 'relative';
+    }
     infoDiv.appendChild(wrapper);
 
     skinItem.setAttribute(BADGE_FLAG, 'true');
