@@ -1,0 +1,40 @@
+.skin-selection-carousel .skin-selection-item.disabled,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"] {
+  filter: grayscale(0) saturate(1.1) contrast(1.05) !important;
+  -webkit-filter: grayscale(0) saturate(1.1) contrast(1.05) !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.skin-selection-carousel .skin-selection-item.disabled .skin-selection-thumbnail,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"] .skin-selection-thumbnail {
+  filter: grayscale(0) saturate(1.15) contrast(1.05) !important;
+  -webkit-filter: grayscale(0) saturate(1.15) contrast(1.05) !important;
+  transition: filter 0.25s ease;
+}
+
+.skin-selection-carousel .skin-selection-item.disabled::before,
+.skin-selection-carousel .skin-selection-item.disabled::after,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"]::before,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"]::after,
+.skin-selection-carousel .skin-selection-item.disabled .skin-selection-thumbnail::before,
+.skin-selection-carousel .skin-selection-item.disabled .skin-selection-thumbnail::after,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"] .skin-selection-thumbnail::before,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"] .skin-selection-thumbnail::after {
+  display: none !important;
+}
+
+.skin-selection-carousel .skin-selection-item.disabled .locked-state,
+.skin-selection-carousel .skin-selection-item[aria-disabled="true"] .locked-state {
+  display: none !important;
+}
+
+.unlock-skin-hit-area {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.unlock-skin-hit-area .locked-state {
+  display: none !important;
+}
+
