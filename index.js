@@ -61,12 +61,8 @@
       display: none !important;
     }
 
-    .skin-selection-carousel-container .skin-selection-carousel .skin-selection-item.skin-selection-item-selected,
-    .skin-selection-carousel-container .skin-selection-carousel .skin-selection-item.skin-selection-item-selected::before,
-    .skin-selection-carousel-container .skin-selection-carousel .skin-selection-item.skin-selection-item-selected::after {
-      background: none !important;
-      background-image: none !important;
-      background-color: transparent !important;
+    .skin-selection-carousel-container .skin-selection-carousel .skin-selection-item.skin-selection-item-selected {
+      background: #3c3c41 !important;
     }
 
     .skin-selection-carousel-container .skin-selection-carousel .skin-selection-item.skin-selection-item-selected::before,
