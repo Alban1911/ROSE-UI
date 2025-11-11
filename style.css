@@ -6,6 +6,10 @@
   cursor: pointer !important;
 }
 
+.skin-selection-carousel .skin-selection-item.lpp-skin-hidden {
+  pointer-events: none !important;
+}
+
 .skin-selection-carousel .skin-selection-item.disabled .skin-selection-thumbnail,
 .skin-selection-carousel .skin-selection-item[aria-disabled="true"] .skin-selection-thumbnail {
   filter: grayscale(0) saturate(1.15) contrast(1.05) !important;

@@ -7,9 +7,9 @@
   const STYLE_ID = 'lpp-ui-unlock-skins-css';
   const INLINE_ID = `${STYLE_ID}-inline`;
   const STYLESHEET_NAME = 'style.css';
-  const REWARD_ICON = '/fe/lol-collections/images/item-element/rewards-program-icon.svg';
-  const BADGE_FLAG = 'data-skin-reward-badge';
   const BORDER_CLASS = 'lpp-skin-border';
+  const HIDDEN_CLASS = 'lpp-skin-hidden';
+  const VISIBLE_OFFSETS = new Set([0, 1, 2, 3, 4]);
 
   const INLINE_RULES = `
     .skin-selection-carousel .skin-selection-item {
@@ -51,6 +51,10 @@
     .skin-selection-carousel .skin-selection-item.disabled .locked-state,
     .skin-selection-carousel .skin-selection-item[aria-disabled="true"] .locked-state {
       display: none !important;
+    }
+
+    .skin-selection-carousel .skin-selection-item.${HIDDEN_CLASS} {
+      pointer-events: none !important;
     }
 
     .unlock-skin-hit-area {
@@ -166,54 +170,6 @@
     document.head.appendChild(link);
   }
 
-  function addBadgeToSkin(skinItem) {
-    if (!skinItem) {
-      return;
-    }
-
-    if (skinItem.hasAttribute(BADGE_FLAG)) {
-      return;
-    }
-
-    const infoDiv = skinItem.querySelector('.skin-selection-item-information');
-    if (!infoDiv) {
-      return;
-    }
-
-    const existingBadge = skinItem.querySelector('.lpp-reward-badge');
-    if (existingBadge) {
-      skinItem.setAttribute(BADGE_FLAG, 'true');
-      return;
-    }
-
-    const legacyBadge = infoDiv.querySelector('.reward-badge');
-    if (legacyBadge) {
-      legacyBadge.closest('.info-badge-wrapper')?.remove();
-    }
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'info-badge-wrapper badge-0 lpp-reward-badge';
-    wrapper.style.position = 'absolute';
-    wrapper.style.top = '-5px';
-    wrapper.style.right = '-6px';
-    wrapper.style.zIndex = '5';
-    wrapper.style.pointerEvents = 'none';
-    wrapper.style.transform = 'scale(1.75)';
-    wrapper.style.transformOrigin = 'top right';
-
-    const img = document.createElement('img');
-    img.src = REWARD_ICON;
-    img.className = 'reward-badge';
-
-    wrapper.appendChild(img);
-    if (getComputedStyle(infoDiv).position === 'static') {
-      infoDiv.style.position = 'relative';
-    }
-    infoDiv.appendChild(wrapper);
-
-    skinItem.setAttribute(BADGE_FLAG, 'true');
-  }
-
   function ensureBorderFrame(skinItem) {
     if (!skinItem) {
       return;
@@ -229,19 +185,72 @@
     skinItem.appendChild(border);
   }
 
+  function parseCarouselOffset(skinItem) {
+    const offsetClass = Array.from(skinItem.classList).find((cls) => cls.startsWith('skin-carousel-offset'));
+    if (!offsetClass) {
+      return null;
+    }
+
+    const match = offsetClass.match(/skin-carousel-offset-(-?\d+)/);
+    if (!match) {
+      return null;
+    }
+
+    const value = Number.parseInt(match[1], 10);
+    return Number.isNaN(value) ? null : value;
+  }
+
+  function isOffsetVisible(offset) {
+    if (offset === null) {
+      return true;
+    }
+
+    return VISIBLE_OFFSETS.has(offset);
+  }
+
+  function applyOffsetVisibility(skinItem) {
+    if (!skinItem) {
+      return;
+    }
+
+    const offset = parseCarouselOffset(skinItem);
+    const shouldBeVisible = isOffsetVisible(offset);
+
+    skinItem.classList.toggle('lpp-visible-skin', shouldBeVisible);
+    skinItem.classList.toggle(HIDDEN_CLASS, !shouldBeVisible);
+
+    if (shouldBeVisible) {
+      skinItem.style.removeProperty('pointer-events');
+    } else {
+      skinItem.style.setProperty('pointer-events', 'none', 'important');
+    }
+  }
+
   function scanSkinSelection() {
     document.querySelectorAll('.skin-selection-item').forEach((skinItem) => {
       ensureBorderFrame(skinItem);
-      addBadgeToSkin(skinItem);
+      applyOffsetVisibility(skinItem);
     });
   }
 
-  function setupBadgeObserver() {
-    const observer = new MutationObserver(scanSkinSelection);
-    observer.observe(document.body, { childList: true, subtree: true });
+  function setupSkinObserver() {
+    const observer = new MutationObserver(() => {
+      scanSkinSelection();
+    });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
 
     // Re-scan periodically as a safety net (LCU sometimes swaps DOM wholesale)
-    const intervalId = setInterval(scanSkinSelection, 2000);
+    const intervalId = setInterval(scanSkinSelection, 500);
+
+    const handleResize = () => {
+      scanSkinSelection();
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
 
     document.addEventListener(
       'visibilitychange',
@@ -257,6 +266,7 @@
     return () => {
       observer.disconnect();
       clearInterval(intervalId);
+      window.removeEventListener('resize', handleResize);
     };
   }
 
@@ -268,8 +278,8 @@
 
     attachStylesheet();
     scanSkinSelection();
-    setupBadgeObserver();
-    log.info('skin preview & reward badge overrides active');
+    setupSkinObserver();
+    log.info('skin preview overrides active');
   }
 
   if (typeof document === 'undefined') {
