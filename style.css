@@ -62,9 +62,9 @@
 .skin-selection-carousel .skin-selection-item .lpp-skin-border {
   position: absolute;
   inset: 0;
-  border: 2px solid #3c3c41;
-  border-radius: inherit;
   box-sizing: border-box;
+  border: 1px solid rgba(1, 10, 19, 0.6);
+  border-radius: inherit;
   pointer-events: none;
   z-index: 1;
 }
@@ -73,6 +73,7 @@
   border: 2px solid transparent;
   border-image-source: linear-gradient(0deg, #c8aa6e 0%, #c89b3c 44%, #a07b32 59%, #785a28 100%);
   border-image-slice: 1;
+  box-shadow: inset 0 0 0 1px rgba(1, 10, 19, 0.6);
 }
 
 
