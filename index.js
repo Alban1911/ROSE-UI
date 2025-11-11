@@ -9,6 +9,7 @@
   const STYLESHEET_NAME = 'style.css';
   const REWARD_ICON = '/fe/lol-collections/images/item-element/rewards-program-icon.svg';
   const BADGE_FLAG = 'data-skin-reward-badge';
+  const BORDER_CLASS = 'lpp-skin-border';
 
   const INLINE_RULES = `
     .skin-selection-carousel .skin-selection-item {
@@ -77,6 +78,22 @@
     .skin-selection-carousel-container .skin-selection-carousel .skin-selection-item.skin-selection-item-selected .skin-selection-thumbnail {
       height: 100% !important;
       margin: 0 !important;
+    }
+
+    .skin-selection-carousel .skin-selection-item .lpp-skin-border {
+      position: absolute;
+      inset: 0;
+      border: 2px solid #3c3c41;
+      border-radius: inherit;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .skin-selection-carousel .skin-selection-item.skin-carousel-offset-2 .lpp-skin-border {
+      border: 2px solid transparent;
+      border-image-source: linear-gradient(0deg, #c8aa6e 0%, #c89b3c 44%, #a07b32 59%, #785a28 100%);
+      border-image-slice: 1;
     }
 
 
@@ -194,8 +211,26 @@
     skinItem.setAttribute(BADGE_FLAG, 'true');
   }
 
+  function ensureBorderFrame(skinItem) {
+    if (!skinItem) {
+      return;
+    }
+
+    if (skinItem.querySelector(`.${BORDER_CLASS}`)) {
+      return;
+    }
+
+    const border = document.createElement('div');
+    border.className = BORDER_CLASS;
+    border.setAttribute('aria-hidden', 'true');
+    skinItem.appendChild(border);
+  }
+
   function scanSkinSelection() {
-    document.querySelectorAll('.skin-selection-item').forEach(addBadgeToSkin);
+    document.querySelectorAll('.skin-selection-item').forEach((skinItem) => {
+      ensureBorderFrame(skinItem);
+      addBadgeToSkin(skinItem);
+    });
   }
 
   function setupBadgeObserver() {

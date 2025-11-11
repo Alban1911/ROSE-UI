@@ -55,4 +55,24 @@
   margin: 0 !important;
 }
 
+.skin-selection-carousel .skin-selection-item {
+  position: relative;
+}
+
+.skin-selection-carousel .skin-selection-item .lpp-skin-border {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #3c3c41;
+  border-radius: inherit;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.skin-selection-carousel .skin-selection-item.skin-carousel-offset-2 .lpp-skin-border {
+  border: 2px solid transparent;
+  border-image-source: linear-gradient(0deg, #c8aa6e 0%, #c89b3c 44%, #a07b32 59%, #785a28 100%);
+  border-image-slice: 1;
+}
+
 
