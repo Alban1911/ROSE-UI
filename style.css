@@ -1,4 +1,3 @@
-
 .skin-selection-carousel .skin-selection-item.disabled,
 .skin-selection-carousel .skin-selection-item[aria-disabled="true"] {
   filter: grayscale(0) saturate(1.1) contrast(1.05) !important;
@@ -87,7 +86,7 @@
 
 .skin-selection-carousel .skin-selection-item .lpp-skin-border {
   position: absolute;
-  inset: -1px;
+  inset: -2px;
   box-sizing: border-box;
   border: 2px solid transparent;
   border-image-source: linear-gradient(
