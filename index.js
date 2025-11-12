@@ -325,6 +325,12 @@
       wrapper.classList.add('owned');
     });
 
+    // Replace purchase-available with active
+    document.querySelectorAll('.purchase-available').forEach((element) => {
+      element.classList.remove('purchase-available');
+      element.classList.add('active');
+    });
+
     // Remove purchase-disabled class from any element
     document.querySelectorAll('.purchase-disabled').forEach((element) => {
       element.classList.remove('purchase-disabled');
