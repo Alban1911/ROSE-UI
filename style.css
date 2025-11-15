@@ -27,7 +27,7 @@
 
 /* Hover glow effect for owned skins (matching official client) */
 .skin-selection-carousel
-  .skin-selection-item:not(.disabled):not([aria-disabled="true"]):hover
+  .skin-selection-item:not(.disabled):not([aria-disabled="true"]):not(.skin-selection-item-selected):hover
   .skin-selection-thumbnail {
   filter: brightness(1.2) saturate(1.1) !important;
   -webkit-filter: brightness(1.2) saturate(1.1) !important;
@@ -36,10 +36,10 @@
 
 /* Hover glow effect for unowned skins (identical to owned - override base filters on hover) */
 .skin-selection-carousel
-  .skin-selection-item.disabled:hover
+  .skin-selection-item.disabled:not(.skin-selection-item-selected):hover
   .skin-selection-thumbnail,
 .skin-selection-carousel
-  .skin-selection-item[aria-disabled="true"]:hover
+  .skin-selection-item[aria-disabled="true"]:not(.skin-selection-item-selected):hover
   .skin-selection-thumbnail {
   filter: brightness(1.2) saturate(1.1) !important;
   -webkit-filter: brightness(1.2) saturate(1.1) !important;
@@ -143,7 +143,7 @@
 
 /* Golden border on hover for all skins (matching official client) */
 .skin-selection-carousel
-  .skin-selection-item:hover
+  .skin-selection-item:not(.skin-selection-item-selected):hover
   .lpp-skin-border {
   border: 2px solid transparent;
   border-image-source: linear-gradient(
