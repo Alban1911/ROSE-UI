@@ -14,8 +14,6 @@
   const CHROMA_CONTAINER_CLASS = "lpp-chroma-container";
   const VISIBLE_OFFSETS = new Set([0, 1, 2, 3, 4]);
 
-  const TOOLTIP_ID = "lpp-golden-rose-tooltip";
-  const TOOLTIP_TEXT = "Rose";
   const DISCORD_INVITE_URL = "https://discord.gg/cDepnwVS8Z";
 
   const INLINE_RULES = `
@@ -23,70 +21,22 @@
       position: relative;
     }
 
-    .lpp-golden-rose-tooltip {
-      position: absolute;
-      bottom: -45px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* Prevent active state styling for Golden Rose */
+    lol-uikit-navigation-item.menu_item_Golden\\ Rose .section.active::before,
+    lol-uikit-navigation-item.menu_item_Golden\\ Rose .section.active::after,
+    lol-uikit-navigation-item.menu_item_Golden\\ Rose .section.active,
+    lol-uikit-navigation-item.menu_item_Golden\\ Rose .section.active .section-glow,
+    lol-uikit-navigation-item.menu_item_Golden\\ Rose .section.active .section-glow-container {
+      display: none !important;
+      background: none !important;
+      background-image: none !important;
     }
 
-    .lpp-golden-rose-tooltip.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .lpp-golden-rose-tooltip .tooltip-caret {
-      width: 0;
-      height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-bottom: 6px solid #c8aa6e;
-      margin-bottom: -1px;
-      position: relative;
-      z-index: 2;
-      order: -1;
-    }
-
-    .lpp-golden-rose-tooltip .section-text {
-      -webkit-user-select: none;
-      font-kerning: normal;
-      -webkit-font-feature-settings: "kern" 1;
-      text-transform: uppercase;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      color: #f0e6d2;
-      -webkit-font-smoothing: subpixel-antialiased;
-      font-family: var(--font-display);
-      display: flex;
-      cursor: pointer;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      min-width: 40px;
-      pointer-events: auto;
-      position: relative;
-      --disabled-color: hsla(40,50%,88%,.5);
-      padding: 8px 16px;
-      align-items: center;
-      justify-content: center;
-      background: #1e2328;
-      border: 1px solid #c8aa6e;
-      border-radius: 4px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-      transition: color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .lpp-golden-rose-tooltip .section-text:hover {
-      color: #f0e6d2;
-      border-color: #f0e6d2;
-      box-shadow: 0 0 15px rgba(200, 170, 110, 0.5);
+    /* Prevent hover state from showing navigation pointer */
+    lol-uikit-navigation-item.menu_item_Golden\\ Rose .section:hover::after {
+      opacity: 0 !important;
+      background: none !important;
+      background-image: none !important;
     }
 
     .skin-selection-carousel .skin-selection-item {
@@ -490,77 +440,86 @@
     };
   }
 
-  function createGoldenRoseTooltip(navItem) {
-    // Check if tooltip already exists
-    let tooltip = navItem.querySelector(`.${TOOLTIP_ID}`);
-    if (tooltip) {
-      return tooltip;
-    }
-
-    // Create tooltip container
-    tooltip = document.createElement("div");
-    tooltip.className = `lpp-golden-rose-tooltip ${TOOLTIP_ID}`;
-    tooltip.id = TOOLTIP_ID;
-
-    // Create caret (triangular indicator pointing up)
-    const caret = document.createElement("div");
-    caret.className = "tooltip-caret";
-
-    // Create section-text element
-    const sectionText = document.createElement("div");
-    sectionText.className = "section-text";
-    sectionText.textContent = TOOLTIP_TEXT;
-
-    // Make text clickable - open Discord invite on click
-    sectionText.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.open(DISCORD_INVITE_URL, "_blank");
-      log.info("Opened Discord invite");
-    });
-
-    // Add caret first, then text (caret appears above)
-    tooltip.appendChild(caret);
-    tooltip.appendChild(sectionText);
-    navItem.appendChild(tooltip);
-
-    return tooltip;
-  }
-
-  function showGoldenRoseTooltip(navItem) {
-    const tooltip = navItem.querySelector(`.${TOOLTIP_ID}`);
-    if (tooltip) {
-      tooltip.classList.add("show");
-    }
-  }
-
-  function hideGoldenRoseTooltip(navItem) {
-    const tooltip = navItem.querySelector(`.${TOOLTIP_ID}`);
-    if (tooltip) {
-      tooltip.classList.remove("show");
-    }
-  }
-
-  function attachGoldenRoseTooltipListeners(navItem) {
+  function attachGoldenRoseListeners(navItem) {
     // Check if listeners already attached
-    if (navItem.dataset.lppTooltipAttached === "true") {
+    if (navItem.dataset.lppDiscordAttached === "true") {
       return;
     }
 
-    // Create tooltip if it doesn't exist
-    createGoldenRoseTooltip(navItem);
+    // Add click handler to nav item - open Discord and prevent default navigation
+    navItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.open(DISCORD_INVITE_URL, "_blank");
+      log.info("Opened Discord invite from Golden Rose button");
+      
+      // Prevent the section from getting active class
+      const section = navItem.querySelector(".section");
+      if (section) {
+        section.classList.remove("active");
+      }
+    }, true); // Use capture phase to intercept early
 
-    // Add hover event listeners
-    navItem.addEventListener("mouseenter", () => {
-      showGoldenRoseTooltip(navItem);
-    });
+    // Also prevent section click from bubbling up - wait for section to exist
+    const setupSectionHandlers = () => {
+      const section = navItem.querySelector(".section");
+      if (section && !section.dataset.lppDiscordHandler) {
+        section.dataset.lppDiscordHandler = "true";
+        
+        section.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          window.open(DISCORD_INVITE_URL, "_blank");
+          
+          // Prevent active class
+          section.classList.remove("active");
+        }, true);
 
-    navItem.addEventListener("mouseleave", () => {
-      hideGoldenRoseTooltip(navItem);
-    });
+        // Watch for active class being added and remove it immediately
+        const activeObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === "attributes" && mutation.attributeName === "class") {
+              if (section.classList.contains("active")) {
+                section.classList.remove("active");
+              }
+            }
+          });
+        });
+
+        activeObserver.observe(section, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+
+        // Store observer reference for cleanup if needed
+        navItem.dataset.lppActiveObserver = "true";
+        return true;
+      }
+      return false;
+    };
+
+    // Try immediately, then watch for section to appear
+    if (!setupSectionHandlers()) {
+      const sectionObserver = new MutationObserver(() => {
+        if (setupSectionHandlers()) {
+          sectionObserver.disconnect();
+        }
+      });
+
+      sectionObserver.observe(navItem, {
+        childList: true,
+        subtree: true,
+      });
+
+      // Also try after a short delay (Ember might take time to initialize)
+      setTimeout(() => {
+        setupSectionHandlers();
+        sectionObserver.disconnect();
+      }, 500);
+    }
 
     // Mark as attached
-    navItem.dataset.lppTooltipAttached = "true";
+    navItem.dataset.lppDiscordAttached = "true";
   }
 
   function injectGoldenRoseNavItem() {
@@ -576,7 +535,7 @@
     if (existingItem) {
       const navItem = existingItem.closest("lol-uikit-navigation-item");
       if (navItem) {
-        attachGoldenRoseTooltipListeners(navItem);
+        attachGoldenRoseListeners(navItem);
       }
       return true;
     }
@@ -616,8 +575,8 @@
     separator.className = "right-nav-vertical-rule";
     rightNavMenu.insertBefore(separator, navItem.nextSibling);
 
-    // Attach tooltip listeners
-    attachGoldenRoseTooltipListeners(navItem);
+    // Attach Discord click listeners
+    attachGoldenRoseListeners(navItem);
 
     log.info("Golden Rose navigation item injected");
     return true;
