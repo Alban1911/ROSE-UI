@@ -5,7 +5,7 @@
  * @link https://github.com/Alban1911/Rose-UI
  */
 (function enableLockedSkinPreview() {
-  const LOG_PREFIX = "[LPP-UI][skin-preview]";
+  const LOG_PREFIX = "[Rose-UI][skin-preview]";
   const STYLE_ID = "lpp-ui-unlock-skins-css";
   const INLINE_ID = `${STYLE_ID}-inline`;
   const STYLESHEET_NAME = "style.css";
