@@ -1,6 +1,8 @@
 /**
- * Ensure champ-select treats disabled skins as visually unlocked by injecting
- * a companion stylesheet (and falling back to inline rules if it fails).
+ * @name Rose-UI
+ * @author Rose Team
+ * @description Interface unlocker for Pengu Loader
+ * @link https://github.com/Alban1911/Rose-UI
  */
 (function enableLockedSkinPreview() {
   const LOG_PREFIX = "[LPP-UI][skin-preview]";
