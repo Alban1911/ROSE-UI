@@ -345,20 +345,22 @@
 
   function markSkinsAsOwned() {
     // Remove unowned class and add owned class to thumbnail-wrapper elements
-    document.querySelectorAll('.thumbnail-wrapper.unowned').forEach((wrapper) => {
-      wrapper.classList.remove('unowned');
-      wrapper.classList.add('owned');
-    });
+    document
+      .querySelectorAll(".thumbnail-wrapper.unowned")
+      .forEach((wrapper) => {
+        wrapper.classList.remove("unowned");
+        wrapper.classList.add("owned");
+      });
 
     // Replace purchase-available with active
-    document.querySelectorAll('.purchase-available').forEach((element) => {
-      element.classList.remove('purchase-available');
-      element.classList.add('active');
+    document.querySelectorAll(".purchase-available").forEach((element) => {
+      element.classList.remove("purchase-available");
+      element.classList.add("active");
     });
 
     // Remove purchase-disabled class from any element
-    document.querySelectorAll('.purchase-disabled').forEach((element) => {
-      element.classList.remove('purchase-disabled');
+    document.querySelectorAll(".purchase-disabled").forEach((element) => {
+      element.classList.remove("purchase-disabled");
     });
   }
 
@@ -368,7 +370,7 @@
       ensureBorderFrame(skinItem);
       applyOffsetVisibility(skinItem);
     });
-    
+
     // Mark skins as owned in Swiftplay
     markSkinsAsOwned();
   }
@@ -414,6 +416,92 @@
     };
   }
 
+  function injectGoldenRoseNavItem() {
+    const rightNavMenu = document.querySelector(".right-nav-menu");
+    if (!rightNavMenu) {
+      return false;
+    }
+
+    // Check if Golden Rose item already exists by checking for the golden_rose.png image
+    const existingItem = rightNavMenu.querySelector(
+      'lol-uikit-navigation-item .menu-item-icon[style*="golden_rose.png"]'
+    );
+    if (existingItem) {
+      return true;
+    }
+
+    // Create the navigation item
+    const navItem = document.createElement("lol-uikit-navigation-item");
+    navItem.id = `ember${Date.now()}`;
+    navItem.className =
+      "main-navigation-menu-item menu_item_Golden Rose ember-view";
+
+    // Create icon wrapper structure
+    const iconWrapper = document.createElement("div");
+    iconWrapper.className = "menu-item-icon-wrapper";
+
+    const glow = document.createElement("div");
+    glow.className = "menu-item-glow";
+
+    const icon = document.createElement("div");
+    icon.className = "menu-item-icon";
+    icon.style.webkitMaskImage =
+      "url(http://localhost:3001/asset/golden_rose.png)";
+
+    iconWrapper.appendChild(glow);
+    iconWrapper.appendChild(icon);
+    navItem.appendChild(iconWrapper);
+
+    // Insert at the beginning of the nav menu
+    const firstChild = rightNavMenu.firstChild;
+    if (firstChild) {
+      rightNavMenu.insertBefore(navItem, firstChild);
+    } else {
+      rightNavMenu.appendChild(navItem);
+    }
+
+    // Add separator after the Golden Rose item
+    const separator = document.createElement("div");
+    separator.className = "right-nav-vertical-rule";
+    rightNavMenu.insertBefore(separator, navItem.nextSibling);
+
+    log.info("Golden Rose navigation item injected");
+    return true;
+  }
+
+  function setupNavObserver() {
+    // Try to inject immediately
+    if (injectGoldenRoseNavItem()) {
+      return;
+    }
+
+    // If not found, observe for nav menu creation
+    const observer = new MutationObserver(() => {
+      if (injectGoldenRoseNavItem()) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Also check periodically as a safety net
+    const intervalId = setInterval(() => {
+      if (injectGoldenRoseNavItem()) {
+        clearInterval(intervalId);
+        observer.disconnect();
+      }
+    }, 500);
+
+    // Cleanup after a reasonable time
+    setTimeout(() => {
+      observer.disconnect();
+      clearInterval(intervalId);
+    }, 30000);
+  }
+
   function init() {
     if (!document || !document.head) {
       requestAnimationFrame(init);
@@ -423,6 +511,7 @@
     attachStylesheet();
     scanSkinSelection();
     setupSkinObserver();
+    setupNavObserver();
     log.info("skin preview overrides active");
   }
 
