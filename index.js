@@ -446,12 +446,19 @@
       return;
     }
 
-    // Add click handler to nav item - open Discord and prevent default navigation
+    // Add click handler to nav item - open settings panel
     navItem.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      window.open(DISCORD_INVITE_URL, "_blank");
-      log.info("Opened Discord invite from Golden Rose button");
+      
+      // Dispatch event to open settings panel
+      const event = new CustomEvent("rose-open-settings", {
+        detail: { navItem: navItem },
+        bubbles: true,
+        cancelable: true
+      });
+      window.dispatchEvent(event);
+      log.info("Dispatched rose-open-settings event from Golden Rose button");
       
       // Prevent the section from getting active class
       const section = navItem.querySelector(".section");
@@ -469,7 +476,15 @@
         section.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
-          window.open(DISCORD_INVITE_URL, "_blank");
+          
+          // Dispatch event to open settings panel
+          const event = new CustomEvent("rose-open-settings", {
+            detail: { navItem: navItem },
+            bubbles: true,
+            cancelable: true
+          });
+          window.dispatchEvent(event);
+          log.info("Dispatched rose-open-settings event from Golden Rose section");
           
           // Prevent active class
           section.classList.remove("active");
