@@ -15,6 +15,33 @@
   const VISIBLE_OFFSETS = new Set([0, 1, 2, 3, 4]);
 
   const DISCORD_INVITE_URL = "https://discord.gg/cDepnwVS8Z";
+  
+  // Audio: play click sound when Golden Rose button is clicked
+  // Use HTTP server to serve asset files
+  const ROSE_CLICK_SOUND_URL = "http://localhost:3001/asset/sfx-soc-ui-click-generic.ogg";
+  
+  let roseClickAudio = null;
+  function playRoseClickSound() {
+    try {
+      if (!roseClickAudio) {
+        roseClickAudio = new Audio(ROSE_CLICK_SOUND_URL);
+        roseClickAudio.preload = "auto";
+      } else {
+        // Reset playback so rapid clicks replay the sound from the start
+        roseClickAudio.currentTime = 0;
+      }
+      
+      // Play the sound
+      const playPromise = roseClickAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Ignore playback errors silently
+        });
+      }
+    } catch (err) {
+      // Ignore errors silently
+    }
+  }
 
   const INLINE_RULES = `
     lol-uikit-navigation-item.menu_item_Golden\\ Rose {
@@ -451,6 +478,9 @@
       e.stopPropagation();
       e.preventDefault();
       
+      // Play click sound
+      playRoseClickSound();
+      
       // Dispatch event to open settings panel
       const event = new CustomEvent("rose-open-settings", {
         detail: { navItem: navItem },
@@ -476,6 +506,9 @@
         section.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
+          
+          // Play click sound
+          playRoseClickSound();
           
           // Dispatch event to open settings panel
           const event = new CustomEvent("rose-open-settings", {
