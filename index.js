@@ -700,20 +700,42 @@
     }, 30000);
   }
 
+  let _initializing = false;
+  let _initialized = false;
+
   async function init() {
-    if (!document || !document.head) {
-      requestAnimationFrame(init);
+    // Prevent multiple concurrent initializations
+    if (_initializing || _initialized) {
       return;
     }
 
-    // Load bridge port before initializing
-    await loadBridgePort();
+    if (!document || !document.head) {
+      // Use synchronous wrapper to prevent multiple concurrent schedules
+      requestAnimationFrame(() => {
+        init().catch(err => {
+          log.error("Init failed:", err);
+          _initializing = false;
+        });
+      });
+      return;
+    }
 
-    attachStylesheet();
-    scanSkinSelection();
-    setupSkinObserver();
-    setupNavObserver();
-    log.info("skin preview overrides active");
+    _initializing = true;
+    try {
+      // Load bridge port before initializing
+      await loadBridgePort();
+
+      attachStylesheet();
+      scanSkinSelection();
+      setupSkinObserver();
+      setupNavObserver();
+      log.info("skin preview overrides active");
+      _initialized = true;
+    } catch (err) {
+      log.error("Init failed:", err);
+    } finally {
+      _initializing = false;
+    }
   }
 
   if (typeof document === "undefined") {
