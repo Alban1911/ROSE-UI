@@ -16,10 +16,7 @@
 
   const DISCORD_INVITE_URL = "https://discord.gg/cDepnwVS8Z";
 
-  // Audio: play click sound when Golden Rose button is clicked
-  // Use HTTP server to serve asset files
   let BRIDGE_PORT = 50000; // Default, will be updated from /bridge-port endpoint
-  let ROSE_CLICK_SOUND_URL = `http://localhost:${BRIDGE_PORT}/asset/sfx-soc-ui-click-generic.ogg`;
   const BRIDGE_PORT_STORAGE_KEY = "rose_bridge_port";
   const DISCOVERY_START_PORT = 50000;
   const DISCOVERY_END_PORT = 50010;
@@ -42,9 +39,6 @@
               const fetchedPort = parseInt(portText.trim(), 10);
               if (!isNaN(fetchedPort) && fetchedPort > 0) {
                 BRIDGE_PORT = fetchedPort;
-                ROSE_CLICK_SOUND_URL = `http://localhost:${BRIDGE_PORT}/asset/sfx-soc-ui-click-generic.ogg`;
-                // Recreate audio object with new URL
-                roseClickAudio = null;
                 if (window?.console) {
                   console.log(`${LOG_PREFIX} Loaded bridge port from cache: ${BRIDGE_PORT}`);
                 }
@@ -69,9 +63,6 @@
             const fetchedPort = parseInt(portText.trim(), 10);
             if (!isNaN(fetchedPort) && fetchedPort > 0) {
               BRIDGE_PORT = fetchedPort;
-              ROSE_CLICK_SOUND_URL = `http://localhost:${BRIDGE_PORT}/asset/sfx-soc-ui-click-generic.ogg`;
-              // Recreate audio object with new URL
-              roseClickAudio = null;
               // Cache the discovered port
               localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
               if (window?.console) {
@@ -96,9 +87,6 @@
             const fetchedPort = parseInt(portText.trim(), 10);
             if (!isNaN(fetchedPort) && fetchedPort > 0) {
               BRIDGE_PORT = fetchedPort;
-              ROSE_CLICK_SOUND_URL = `http://localhost:${BRIDGE_PORT}/asset/sfx-soc-ui-click-generic.ogg`;
-              // Recreate audio object with new URL
-              roseClickAudio = null;
               localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
               if (window?.console) {
                 console.log(`${LOG_PREFIX} Loaded bridge port (legacy): ${BRIDGE_PORT}`);
@@ -125,28 +113,6 @@
     }
   }
 
-  let roseClickAudio = null;
-  function playRoseClickSound() {
-    try {
-      if (!roseClickAudio) {
-        roseClickAudio = new Audio(ROSE_CLICK_SOUND_URL);
-        roseClickAudio.preload = "auto";
-      } else {
-        // Reset playback so rapid clicks replay the sound from the start
-        roseClickAudio.currentTime = 0;
-      }
-
-      // Play the sound
-      const playPromise = roseClickAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Ignore playback errors silently
-        });
-      }
-    } catch (err) {
-      // Ignore errors silently
-    }
-  }
 
   const INLINE_RULES = `
     lol-uikit-navigation-item.menu_item_Golden\\ Rose {
@@ -585,9 +551,6 @@
         e.stopPropagation();
         e.preventDefault();
 
-        // Play click sound
-        playRoseClickSound();
-
         // Dispatch event to open settings panel
         const event = new CustomEvent("rose-open-settings", {
           detail: { navItem: navItem },
@@ -617,9 +580,6 @@
           (e) => {
             e.stopPropagation();
             e.preventDefault();
-
-            // Play click sound
-            playRoseClickSound();
 
             // Dispatch event to open settings panel
             const event = new CustomEvent("rose-open-settings", {
