@@ -15,12 +15,12 @@
   const VISIBLE_OFFSETS = new Set([0, 1, 2, 3, 4]);
 
   const DISCORD_INVITE_URL = "https://discord.gg/cDepnwVS8Z";
-  
+
   // Audio: play click sound when Golden Rose button is clicked
   // Use HTTP server to serve asset files
   let BRIDGE_PORT = 3000; // Default, will be updated from /port endpoint
   let ROSE_CLICK_SOUND_URL = `http://localhost:${BRIDGE_PORT}/asset/sfx-soc-ui-click-generic.ogg`;
-  
+
   // Load bridge port from /port endpoint
   async function loadBridgePort() {
     try {
@@ -46,7 +46,9 @@
         }
       }
       if (window?.console) {
-        console.warn(`${LOG_PREFIX} Failed to load bridge port, using default (3000)`);
+        console.warn(
+          `${LOG_PREFIX} Failed to load bridge port, using default (3000)`
+        );
       }
       return false;
     } catch (e) {
@@ -56,7 +58,7 @@
       return false;
     }
   }
-  
+
   let roseClickAudio = null;
   function playRoseClickSound() {
     try {
@@ -67,7 +69,7 @@
         // Reset playback so rapid clicks replay the sound from the start
         roseClickAudio.currentTime = 0;
       }
-      
+
       // Play the sound
       const playPromise = roseClickAudio.play();
       if (playPromise !== undefined) {
@@ -511,59 +513,72 @@
     }
 
     // Add click handler to nav item - open settings panel
-    navItem.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      
-      // Play click sound
-      playRoseClickSound();
-      
-      // Dispatch event to open settings panel
-      const event = new CustomEvent("rose-open-settings", {
-        detail: { navItem: navItem },
-        bubbles: true,
-        cancelable: true
-      });
-      window.dispatchEvent(event);
-      log.info("Dispatched rose-open-settings event from Golden Rose button");
-      
-      // Prevent the section from getting active class
-      const section = navItem.querySelector(".section");
-      if (section) {
-        section.classList.remove("active");
-      }
-    }, true); // Use capture phase to intercept early
+    navItem.addEventListener(
+      "click",
+      (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Play click sound
+        playRoseClickSound();
+
+        // Dispatch event to open settings panel
+        const event = new CustomEvent("rose-open-settings", {
+          detail: { navItem: navItem },
+          bubbles: true,
+          cancelable: true,
+        });
+        window.dispatchEvent(event);
+        log.info("Dispatched rose-open-settings event from Golden Rose button");
+
+        // Prevent the section from getting active class
+        const section = navItem.querySelector(".section");
+        if (section) {
+          section.classList.remove("active");
+        }
+      },
+      true
+    ); // Use capture phase to intercept early
 
     // Also prevent section click from bubbling up - wait for section to exist
     const setupSectionHandlers = () => {
       const section = navItem.querySelector(".section");
       if (section && !section.dataset.lppDiscordHandler) {
         section.dataset.lppDiscordHandler = "true";
-        
-        section.addEventListener("click", (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          
-          // Play click sound
-          playRoseClickSound();
-          
-          // Dispatch event to open settings panel
-          const event = new CustomEvent("rose-open-settings", {
-            detail: { navItem: navItem },
-            bubbles: true,
-            cancelable: true
-          });
-          window.dispatchEvent(event);
-          log.info("Dispatched rose-open-settings event from Golden Rose section");
-          
-          // Prevent active class
-          section.classList.remove("active");
-        }, true);
+
+        section.addEventListener(
+          "click",
+          (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // Play click sound
+            playRoseClickSound();
+
+            // Dispatch event to open settings panel
+            const event = new CustomEvent("rose-open-settings", {
+              detail: { navItem: navItem },
+              bubbles: true,
+              cancelable: true,
+            });
+            window.dispatchEvent(event);
+            log.info(
+              "Dispatched rose-open-settings event from Golden Rose section"
+            );
+
+            // Prevent active class
+            section.classList.remove("active");
+          },
+          true
+        );
 
         // Watch for active class being added and remove it immediately
         const activeObserver = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
-            if (mutation.type === "attributes" && mutation.attributeName === "class") {
+            if (
+              mutation.type === "attributes" &&
+              mutation.attributeName === "class"
+            ) {
               if (section.classList.contains("active")) {
                 section.classList.remove("active");
               }
@@ -640,8 +655,7 @@
 
     const icon = document.createElement("div");
     icon.className = "menu-item-icon";
-    icon.style.webkitMaskImage =
-      "url(http://localhost:3001/asset/golden_rose.png)";
+    icon.style.webkitMaskImage = `url(http://localhost:${BRIDGE_PORT}/asset/golden_rose.png)`;
 
     iconWrapper.appendChild(glow);
     iconWrapper.appendChild(icon);
@@ -702,6 +716,8 @@
 
   let _initializing = false;
   let _initialized = false;
+  let _retryCount = 0;
+  const MAX_RETRIES = 100; // Maximum number of retry attempts
 
   async function init() {
     // Prevent multiple concurrent initializations (but allow recursive retry)
@@ -713,9 +729,19 @@
     if (_initializing) {
       // Allow recursive call to proceed only if document is now ready
       if (!document || !document.head) {
+        // Check retry limit to prevent unbounded retries
+        if (_retryCount >= MAX_RETRIES) {
+          log.error(
+            `Init failed: Maximum retry count (${MAX_RETRIES}) reached. Document still not ready.`
+          );
+          _initializing = false;
+          _retryCount = 0; // Reset for next attempt
+          return;
+        }
+        _retryCount++;
         // Still not ready, schedule another retry
         requestAnimationFrame(() => {
-          init().catch(err => {
+          init().catch((err) => {
             log.error("Init failed:", err);
             _initializing = false;
           });
@@ -726,11 +752,23 @@
     } else {
       // First call - set flag BEFORE document check to prevent race condition
       _initializing = true;
+      // Don't reset retry counter here - it should persist across retries
+      // Only reset on successful initialization
 
       if (!document || !document.head) {
+        // Check retry limit BEFORE incrementing to prevent unbounded retries
+        if (_retryCount >= MAX_RETRIES) {
+          log.error(
+            `Init failed: Maximum retry count (${MAX_RETRIES}) reached. Document still not ready.`
+          );
+          _initializing = false;
+          _retryCount = 0; // Reset for next attempt
+          return;
+        }
+        _retryCount++;
         // Use synchronous wrapper to prevent multiple concurrent schedules
         requestAnimationFrame(() => {
-          init().catch(err => {
+          init().catch((err) => {
             log.error("Init failed:", err);
             _initializing = false;
           });
@@ -748,6 +786,7 @@
       setupNavObserver();
       log.info("skin preview overrides active");
       _initialized = true;
+      _retryCount = 0; // Reset retry counter on success
     } catch (err) {
       log.error("Init failed:", err);
     } finally {
@@ -761,8 +800,18 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        init().catch((err) => {
+          log.error("Init failed:", err);
+        });
+      },
+      { once: true }
+    );
   } else {
-    init();
+    init().catch((err) => {
+      log.error("Init failed:", err);
+    });
   }
 })();
